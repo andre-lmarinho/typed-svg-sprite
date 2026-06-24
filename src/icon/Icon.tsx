@@ -2,10 +2,11 @@ import type React from "react";
 import type { IconName } from "./icon-names";
 
 /**
- * Where the generated sprite lives. Vite serves files in /public at the site
- * root, so /public/icons/sprite.svg is reachable at /icons/sprite.svg.
+ * Where the generated sprite lives. Files in /public are served under Vite's
+ * `base`, so we prefix BASE_URL ("/" in dev, "/typed-svg-sprite/" on Pages) —
+ * a hardcoded "/icons/…" would 404 when the app isn't served from the root.
  */
-const SPRITE_URL = "/icons/sprite.svg";
+const SPRITE_URL = `${import.meta.env.BASE_URL}icons/sprite.svg`;
 
 type IconProps = React.SVGProps<SVGSVGElement> & {
   /** Sprite id — autocompleted and type-checked against the generated union. */
