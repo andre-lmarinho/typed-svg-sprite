@@ -10,11 +10,11 @@ You list the icons you want from [Lucide](https://lucide.dev) in
 [`src/icon/icon-list.ts`](src/icon/icon-list.ts), run the build, and they're
 bundled into the sprite — consumed as `<Icon name="…" />`.
 
-> ### Credit
-> The idea and pattern come from **[calcom/cal.diy](https://github.com/calcom/cal.diy)**.
-> This repository is **not the original author's work** — it's a minimal,
-> standalone showcase of the technique. All credit for the approach goes to the
-> Cal.com team.
+> ### Inspiration
+> This is an independent reference implementation inspired by the typed SVG
+> sprite approach used by **[calcom/cal.diy](https://github.com/calcom/cal.diy)**.
+> The code in this repository was written independently; credit for the
+> inspiration goes to the Cal.com team.
 
 ---
 
@@ -66,10 +66,13 @@ Three small pieces and one build step:
 ```bash
 npm install
 npm run build:icons   # generate sprite.svg + icon-names.ts
+npm test              # run the complete test suite once
 npm run dev           # open the showcase at http://localhost:5173
 ```
 
 `npm run build` runs the icon build, type-checks, and produces a production bundle.
+`npm run test:coverage` runs the same suite and enforces the configured coverage
+thresholds.
 
 ---
 
@@ -110,6 +113,8 @@ export const lucideIcons = ["search", "heart", "star", "download"] as const;
 
 Browse ids at [lucide.dev/icons](https://lucide.dev/icons), then run
 `npm run build:icons` and they're bundled into the sprite.
+The build rejects malformed lists, duplicate ids, and missing Lucide icons
+before either generated file is changed.
 
 > Want a different library? The adapter is a few lines in
 > [`scripts/build-icons.mjs`](scripts/build-icons.mjs) (`readIcons`).
@@ -137,6 +142,7 @@ When an icon stands alone, give it a label so screen readers announce it:
 │   ├── build-icons.mjs           # generator: icon-list.ts → sprite.svg + icon-names.ts
 │   └── build-icons.test.mjs      # self-check for the generator
 ├── public/
+│   ├── THIRD_PARTY_NOTICES.txt   # licenses for the bundled icon artwork
 │   └── icons/
 │       └── sprite.svg            # GENERATED — served & cached once
 └── src/
@@ -162,7 +168,9 @@ the build script is plain Node, so it ports easily to Next.js, Remix, etc. (serv
 
 ## Credits & license
 
-- **Pattern:** [calcom/cal.diy](https://github.com/calcom/cal.diy) — original idea and author.
-- **Sample icons:** [Lucide](https://lucide.dev) (ISC).
-
-This showcase is provided for educational/demonstration purposes.
+- **Inspiration:** the typed SVG sprite approach used by
+  [calcom/cal.diy](https://github.com/calcom/cal.diy).
+- **Icons:** [Lucide](https://lucide.dev) (ISC), including icons derived from
+  Feather (MIT). See
+  [`public/THIRD_PARTY_NOTICES.txt`](public/THIRD_PARTY_NOTICES.txt).
+- **Source code:** [MIT](LICENSE) © 2026 André Marinho.
