@@ -6,21 +6,14 @@ export const iconNames = [
   "calendar",
   "check-circle",
   "download",
-  "file-text",
   "globe",
   "heart",
   "layout-dashboard",
   "lock",
-  "log-out",
-  "moon",
-  "pencil",
   "search",
   "settings",
   "star",
-  "sun",
-  "upload",
   "users",
-  "zap",
 ] as const;
 
 export type IconName = (typeof iconNames)[number];

@@ -4,23 +4,56 @@
   "version": "0.1.0",
   "type": "module",
   "description": "A type-safe SVG sprite icon system: one cached sprite, one <Icon name=\"...\"> with full autocomplete.",
+  "keywords": [
+    "svg",
+    "svg-sprite",
+    "icons",
+    "react",
+    "typescript",
+    "codegen"
+  ],
+  "homepage": "https://andre-lmarinho.github.io/typed-svg-sprite/",
+  "bugs": {
+    "url": "https://github.com/andre-lmarinho/typed-svg-sprite/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andre-lmarinho/typed-svg-sprite.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "André Marinho",
+    "email": "hey@andremarinho.me",
+    "url": "https://andremarinho.me/"
+  },
+  "engines": {
+    "node": "^24.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "npm run build:icons && tsc --noEmit && vite build",
     "preview": "vite preview",
     "build:icons": "node scripts/build-icons.mjs",
-    "test:icons": "node --test scripts/build-icons.test.mjs"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:icons": "vitest run scripts/build-icons.test.mjs",
+    "check": "npm run test:coverage && npm run build"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^4.1.10",
+    "jsdom": "^26.1.0",
     "lucide-static": "^1.21.0",
     "typescript": "^5.6.3",
-    "vite": "^7.1.0"
+    "vite": "^7.1.0",
+    "vitest": "^4.1.10"
   }
 }
