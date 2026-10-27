@@ -3,7 +3,7 @@
 A tiny, **type-safe SVG sprite** icon system for React.
 
 You write `<Icon name="calendar" />` — with full TypeScript autocomplete on
-`name` — and the whole icon set ships as **one cached `sprite.svg`** instead of
+`name` — and the selected icon set ships as **one cacheable `sprite.svg`** instead of
 hundreds of inlined SVGs or per-icon JS modules.
 
 You list the icons you want from [Lucide](https://lucide.dev) in
@@ -22,9 +22,9 @@ bundled into the sprite — consumed as `<Icon name="…" />`.
 
 | Common approach | Cost |
 | --- | --- |
-| Import each icon as a React component (`import { Calendar } from "lucide-react"`) | Ships JS for every icon; bundles grow with each one you use. |
-| Inline `<svg>` everywhere | Markup duplication; the same paths re-shipped on every page. |
-| **This sprite approach** | One `sprite.svg` is downloaded **once and cached**. Each `<Icon>` is just a `<use href="…#id">` reference — no per-icon JS, no extra requests. |
+| Import each icon as a React component (`import { Calendar } from "lucide-react"`) | Ships JS for the icons retained after tree shaking; shared modules can be cached. |
+| Inline `<svg>` in server-rendered HTML | Repeats markup in the document; its transfer cost depends on compression and page caching. |
+| **This sprite approach** | A small React wrapper references one shared `sprite.svg`. The first use downloads the selected set; later uses can reuse it when HTTP caching permits. |
 
 On top of that you get a **generated `IconName` union type**, so a typo like
 `<Icon name="calender" />` is a compile error, and your editor autocompletes
@@ -32,12 +32,31 @@ every available icon.
 
 ---
 
+## Performance measurements
+
+A [reproducible benchmark](docs/performance-analysis.md) compares the demo and a
+synthetic enterprise workload against inline React components, including cold and
+warm cache conditions. With 40 icons per page, a shared 60-icon sprite reduced gzip
+JavaScript by **6.45%** and total bytes across two pages by **1.87%**, but increased
+first-visit bytes by **1.73%**. Icon geometry resolved later despite earlier text
+paint; this is not evidence of a general loading-time improvement.
+
+The report includes raw data, environment details, limitations and reproduction
+commands. These are laboratory results, not measurements from enterprise production.
+
+A [second benchmark of the Cal.diy source components](docs/cal-diy-performance-analysis.md)
+uses its real 156-symbol sprite and `react-inlinesvg` loader in isolated fixtures.
+In the extracted showcase, original injection reduced gzip JS by **1.38%** but
+increased cold payload by **11.29%** versus inline components. It also compares
+native external references and records the source commit, dependency lock and
+180 measured navigations. This does not measure Cal.diy’s complete Next.js routes.
+
 ## How it works
 
 Three small pieces and one build step:
 
 ```
-  src/icon/icon-list.ts  ──►┌─────────────────────────────┐──► public/icons/sprite.svg  (one cached file)
+  src/icon/icon-list.ts  ──►┌─────────────────────────────┐──► public/icons/sprite.svg  (one cacheable file)
   (the lucide ids)          │   scripts/build-icons.mjs   │
                             │   (pure Node)               │──► src/icon/icon-names.ts
                             └─────────────────────────────┘      iconNames + IconName
@@ -55,7 +74,8 @@ Three small pieces and one build step:
      derived via `as const`). This is the **single canonical list of names**;
      it is generated, never hand-edited.
 2. **`src/icon/Icon.tsx`** renders a small `<svg><use href="/icons/sprite.svg#name"/></svg>`.
-   The browser fetches the sprite once; every icon after that is a reference.
+   All icons reference the same sprite resource. Reuse across visits depends on
+   HTTP cache headers and URL versioning.
 3. **`src/icon/icon-list.ts`** lists the ids. It's read as *text* by the build
    script, so it never needs to be compiled or executed.
 
@@ -144,7 +164,7 @@ When an icon stands alone, give it a label so screen readers announce it:
 ├── public/
 │   ├── THIRD_PARTY_NOTICES.txt   # licenses for the bundled icon artwork
 │   └── icons/
-│       └── sprite.svg            # GENERATED — served & cached once
+│       └── sprite.svg            # GENERATED — shared, cacheable resource
 └── src/
     ├── App.tsx                   # the showcase gallery
     └── icon/

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-from-dom": "0.7.3",
+    "react-inlinesvg": "4.1.3",
+    "tailwind-merge": "1.13.2"
+  }
+}
