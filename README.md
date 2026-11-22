@@ -1,14 +1,28 @@
 # typed-svg-sprite
 
-A tiny, **type-safe SVG sprite** icon system for React.
+A small **reference implementation** of a type-safe SVG sprite icon system for
+React. It shows how `<Icon name="calendar" />` can use a generated TypeScript
+union and one shared `sprite.svg`.
 
-You write `<Icon name="calendar" />` — with full TypeScript autocomplete on
-`name` — and the selected icon set ships as **one cacheable `sprite.svg`** instead of
-hundreds of inlined SVGs or per-icon JS modules.
+This repository is a runnable example, **not a published, installable npm
+package**. Its manifest sets `"private": true`, and the public npm registry
+returns 404 for this package name. Use Node 24 and run the commands below from a
+local checkout.
 
-You list the icons you want from [Lucide](https://lucide.dev) in
-[`src/icon/icon-list.ts`](src/icon/icon-list.ts), run the build, and they're
-bundled into the sprite — consumed as `<Icon name="…" />`.
+**[Open the live showcase](https://andre-lmarinho.github.io/typed-svg-sprite/)** to
+browse the icon gallery and try its size and color controls.
+
+## Quick start
+
+```bash
+npm ci
+npm run dev
+```
+
+Open the local URL printed by Vite (usually `http://localhost:5173`). To build
+and test the reference implementation, run `npm run build` and `npm test`.
+Edit [`src/icon/icon-list.ts`](src/icon/icon-list.ts) and run
+`npm run build:icons` to change the generated sprite and icon types.
 
 > ### Inspiration
 > This is an independent reference implementation inspired by the typed SVG
@@ -26,30 +40,30 @@ bundled into the sprite — consumed as `<Icon name="…" />`.
 | Inline `<svg>` in server-rendered HTML | Repeats markup in the document; its transfer cost depends on compression and page caching. |
 | **This sprite approach** | A small React wrapper references one shared `sprite.svg`. The first use downloads the selected set; later uses can reuse it when HTTP caching permits. |
 
-On top of that you get a **generated `IconName` union type**, so a typo like
-`<Icon name="calender" />` is a compile error, and your editor autocompletes
-every available icon.
+The generated `IconName` union catches typos such as
+`<Icon name="calender" />`. Editors also suggest each available icon name.
 
 ---
 
 ## Performance measurements
 
-A [reproducible benchmark](docs/performance-analysis.md) compares the demo and a
-synthetic enterprise workload against inline React components, including cold and
-warm cache conditions. With 40 icons per page, a shared 60-icon sprite reduced gzip
-JavaScript by **6.45%** and total bytes across two pages by **1.87%**, but increased
-first-visit bytes by **1.73%**. Icon geometry resolved later despite earlier text
-paint; this is not evidence of a general loading-time improvement.
+A [reproducible benchmark](docs/performance-analysis.md) compares this demo with
+inline React components. It also tests a synthetic enterprise workload under cold
+and warm cache conditions. Each page uses 40 icons and a shared 60-icon sprite.
 
-The report includes raw data, environment details, limitations and reproduction
-commands. These are laboratory results, not measurements from enterprise production.
+The sprite reduced gzip JavaScript by **6.45%** and two-page total bytes by **1.87%**.
+First-visit bytes rose by **1.73%**. Icons rendered later, even though text painted
+earlier. These results do not show a general loading-time improvement.
+
+The report links raw data and lists the environment, limits, and reproduction steps.
+These are lab results, not results from enterprise production.
 
 A [second benchmark of the Cal.diy source components](docs/cal-diy-performance-analysis.md)
-uses its real 156-symbol sprite and `react-inlinesvg` loader in isolated fixtures.
-In the extracted showcase, original injection reduced gzip JS by **1.38%** but
-increased cold payload by **11.29%** versus inline components. It also compares
-native external references and records the source commit, dependency lock and
-180 measured navigations. This does not measure Cal.diy’s complete Next.js routes.
+uses its 156-symbol sprite and `react-inlinesvg` loader in isolated fixtures.
+Injection reduced gzip JavaScript by **1.38%** in the extracted showcase.
+Cold payload rose by **11.29%** against inline components. The report compares
+native external references. It records the source commit, dependency lock, and
+180 measured navigations. It does not measure Cal.diy’s full Next.js routes.
 
 ## How it works
 
@@ -69,30 +83,15 @@ Three small pieces and one build step:
 
 1. **`scripts/build-icons.mjs`** reads the id list, pulls each icon's SVG from
    the `lucide-static` package, then writes:
-   - `public/icons/sprite.svg` — a `<symbol id="…">` per icon.
-   - `src/icon/icon-names.ts` — `iconNames` (runtime array) + `IconName` (type,
-     derived via `as const`). This is the **single canonical list of names**;
-     it is generated, never hand-edited.
+    - `public/icons/sprite.svg` — a `<symbol id="…">` for each icon.
+    - `src/icon/icon-names.ts` — `iconNames` (runtime array) + `IconName` (type,
+      derived from `as const`). The build script generates this canonical list.
+      Do not edit it by hand.
 2. **`src/icon/Icon.tsx`** renders a small `<svg><use href="/icons/sprite.svg#name"/></svg>`.
    All icons reference the same sprite resource. Reuse across visits depends on
    HTTP cache headers and URL versioning.
-3. **`src/icon/icon-list.ts`** lists the ids. It's read as *text* by the build
-   script, so it never needs to be compiled or executed.
-
----
-
-## Quick start
-
-```bash
-npm install
-npm run build:icons   # generate sprite.svg + icon-names.ts
-npm test              # run the complete test suite once
-npm run dev           # open the showcase at http://localhost:5173
-```
-
-`npm run build` runs the icon build, type-checks, and produces a production bundle.
-`npm run test:coverage` runs the same suite and enforces the configured coverage
-thresholds.
+3. **`src/icon/icon-list.ts`** lists the ids. The build script reads it as text.
+   It does not compile or execute the file.
 
 ---
 
@@ -120,8 +119,8 @@ surrounding text color** automatically. `size` sets both width and height.
 
 ## Adding icons
 
-Make sure `lucide-static` is installed, then add the icon ids to the
-`lucideIcons` array in [`src/icon/icon-list.ts`](src/icon/icon-list.ts):
+Install `lucide-static` if needed. Then add icon ids to the `lucideIcons` array
+in [`src/icon/icon-list.ts`](src/icon/icon-list.ts):
 
 ```bash
 npm i -D lucide-static   # already a devDependency in this repo
@@ -131,10 +130,10 @@ npm i -D lucide-static   # already a devDependency in this repo
 export const lucideIcons = ["search", "heart", "star", "download"] as const;
 ```
 
-Browse ids at [lucide.dev/icons](https://lucide.dev/icons), then run
-`npm run build:icons` and they're bundled into the sprite.
-The build rejects malformed lists, duplicate ids, and missing Lucide icons
-before either generated file is changed.
+Find icon names in the [Lucide icon catalog](https://lucide.dev/icons).
+Run `npm run build:icons` to add them to the sprite.
+The build checks for malformed lists, duplicate ids, and missing Lucide icons.
+It writes neither output file until every check passes.
 
 > Want a different library? The adapter is a few lines in
 > [`scripts/build-icons.mjs`](scripts/build-icons.mjs) (`readIcons`).
@@ -144,8 +143,8 @@ before either generated file is changed.
 
 ## Accessibility
 
-Icons are **decorative by default** (`aria-hidden`, `role="presentation"`), which
-is correct when text already conveys the meaning (e.g. an icon next to a label).
+Icons are **decorative by default** (`aria-hidden`, `role="presentation"`).
+Use this default when text conveys the meaning, such as an icon next to a label.
 When an icon stands alone, give it a label so screen readers announce it:
 
 ```tsx
@@ -174,17 +173,16 @@ When an icon stands alone, give it a label so screen readers announce it:
         └── index.ts              # public exports
 ```
 
-Files marked **GENERATED** are produced by `npm run build:icons`; don't edit
-them by hand.
+Run `npm run build:icons` to generate these files. Do not edit them by hand.
 
 ---
 
 ## Stack
 
-Intentionally minimal, just enough to run the demo: **Vite + React + TypeScript**.
-The icon pattern itself is framework-light — `Icon.tsx` is one small component and
-the build script is plain Node, so it ports easily to Next.js, Remix, etc. (serve
-`sprite.svg` as a static asset and keep the `<use href>` path in sync).
+The demo uses **Vite + React + TypeScript**. The icon pattern can run with other
+frameworks. `Icon.tsx` is one component, and the build script uses plain Node.
+To port it, serve `sprite.svg` as a static asset and keep the `<use href>` path
+in sync.
 
 ## Credits & license
 
