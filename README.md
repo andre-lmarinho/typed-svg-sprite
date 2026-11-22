@@ -25,6 +25,7 @@ Edit [`src/icon/icon-list.ts`](src/icon/icon-list.ts) and run
 `npm run build:icons` to change the generated sprite and icon types.
 
 > ### Inspiration
+>
 > This is an independent reference implementation inspired by the typed SVG
 > sprite approach used by **[calcom/cal.diy](https://github.com/calcom/cal.diy)**.
 > The code in this repository was written independently; credit for the
@@ -34,11 +35,11 @@ Edit [`src/icon/icon-list.ts`](src/icon/icon-list.ts) and run
 
 ## Why this exists
 
-| Common approach | Cost |
-| --- | --- |
-| Import each icon as a React component (`import { Calendar } from "lucide-react"`) | Ships JS for the icons retained after tree shaking; shared modules can be cached. |
-| Inline `<svg>` in server-rendered HTML | Repeats markup in the document; its transfer cost depends on compression and page caching. |
-| **This sprite approach** | A small React wrapper references one shared `sprite.svg`. The first use downloads the selected set; later uses can reuse it when HTTP caching permits. |
+| Common approach                                                                   | Cost                                                                                                                                                   |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Import each icon as a React component (`import { Calendar } from "lucide-react"`) | Ships JS for the icons retained after tree shaking; shared modules can be cached.                                                                      |
+| Inline `<svg>` in server-rendered HTML                                            | Repeats markup in the document; its transfer cost depends on compression and page caching.                                                             |
+| **This sprite approach**                                                          | A small React wrapper references one shared `sprite.svg`. The first use downloads the selected set; later uses can reuse it when HTTP caching permits. |
 
 The generated `IconName` union catches typos such as
 `<Icon name="calender" />`. Editors also suggest each available icon name.
@@ -83,10 +84,10 @@ Three small pieces and one build step:
 
 1. **`scripts/build-icons.mjs`** reads the id list, pulls each icon's SVG from
    the `lucide-static` package, then writes:
-    - `public/icons/sprite.svg` — a `<symbol id="…">` for each icon.
-    - `src/icon/icon-names.ts` — `iconNames` (runtime array) + `IconName` (type,
-      derived from `as const`). The build script generates this canonical list.
-      Do not edit it by hand.
+   - `public/icons/sprite.svg` — a `<symbol id="…">` for each icon.
+   - `src/icon/icon-names.ts` — `iconNames` (runtime array) + `IconName` (type,
+     derived from `as const`). The build script generates this canonical list.
+     Do not edit it by hand.
 2. **`src/icon/Icon.tsx`** renders a small `<svg><use href="/icons/sprite.svg#name"/></svg>`.
    All icons reference the same sprite resource. Reuse across visits depends on
    HTTP cache headers and URL versioning.
